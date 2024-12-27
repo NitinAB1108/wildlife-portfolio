@@ -2,15 +2,25 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { dbConnect } from '../../lib/dbConnect';
 import { Animal } from '../../models/Animal';
 import formidable from 'formidable';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { uploadToBlob } from '../../utils/blobStorage';
 import { getAnimalDetails } from '../../utils/openai';
+import fs from 'fs/promises';
 
 export const config = {
   api: {
     bodyParser: false,
   },
 };
+
+async function bufferToBlob(file: formidable.File): Promise<string> {
+  try {
+    const data = await fs.readFile(file.filepath);
+    return uploadToBlob(data, file.originalFilename || 'unnamed');
+  } catch (error) {
+    console.error('Error reading file:', error);
+    throw new Error('Failed to process file');
+  }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -20,78 +30,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await dbConnect();
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await fs.mkdir(uploadDir, { recursive: true });
-
     const form = formidable({
-      uploadDir,
-      keepExtensions: true,
       multiples: true,
+      keepExtensions: true,
     });
 
     const [fields, files] = await new Promise<[formidable.Fields, formidable.Files]>((resolve, reject) => {
-        form.parse(req, (err, fields, files) => {
-          if (err) reject(err);
-          resolve([fields, files]);
-        });
+      form.parse(req, (err, fields, files) => {
+        if (err) reject(err);
+        resolve([fields, files]);
       });
+    });
 
     const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
     const species = Array.isArray(fields.species) ? fields.species[0] : fields.species;
     const location = Array.isArray(fields.location) ? fields.location[0] : fields.location;
     const fileArray = Array.isArray(files.images) ? files.images : [files.images];
-    
-    // Add null check and type guard
+
     if (!fileArray || !fileArray[0]) {
       throw new Error('No files were uploaded');
     }
 
-    // Type guard to ensure file has newFilename
-    const imagePaths = fileArray.map((file) => {
-      if (!file || !file.newFilename) {
-        throw new Error('Invalid file upload');
-      }
-      return `/uploads/${file.newFilename}`;
-    });
+    // Filter out undefined values and ensure all files are valid
+    const validFiles = fileArray.filter((file): file is formidable.File => file !== undefined);
+    
+    const blobUrls = await Promise.all(
+      validFiles.map(file => bufferToBlob(file))
+    );
 
-    // Get details for first image to determine category
-
-    // Add null checks for required fields
     if (!name) {
       throw new Error('Name is required');
     }
 
-    const speciesValue = species || 'Unknown Species'; // Provide default value if species is undefined
+    const speciesValue = species || 'Unknown Species';
 
-    // Use the checked values in getAnimalDetails
-    const firstImageDetails = await getAnimalDetails(imagePaths[0], name, speciesValue);
+    const firstImageDetails = await getAnimalDetails(blobUrls[0], name, speciesValue);
 
     if (!firstImageDetails || !firstImageDetails.category) {
       throw new Error('Failed to get animal category from OpenAI');
     }
 
-    // Get details for all images
     const imageDetails = await Promise.all(
-        imagePaths.map(async (path) => {
-          const details = await getAnimalDetails(path, name, speciesValue);
-          if (!details) {
-            throw new Error('Failed to get image details from OpenAI');
-          }
-          return {
-            path,
-            species: details.species || speciesValue,
-            description: details.description || 'No description available.',
-          };
-        })
-      );
+      blobUrls.map(async (url) => {
+        const details = await getAnimalDetails(url, name, speciesValue);
+        if (!details) {
+          throw new Error('Failed to get image details from OpenAI');
+        }
+        return {
+          path: url,
+          species: details.species || speciesValue,
+          description: details.description || 'No description available.',
+        };
+      })
+    );
 
     const existingAnimal = await Animal.findOne({ name });
 
     if (existingAnimal) {
       existingAnimal.imageDetails.push(...imageDetails);
-      existingAnimal.images.push(...imagePaths);
+      existingAnimal.images.push(...blobUrls);
 
-      // Update species and description if they're not already set
       if (!existingAnimal.species) {
         existingAnimal.species = species || firstImageDetails.species;
       }
@@ -104,14 +102,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ success: true });
     }
 
-    // Create new animal with all required fields
     const animal = new Animal({
       name,
       species: species || firstImageDetails.species,
       description: firstImageDetails.description,
       category: firstImageDetails.category,
       imageDetails,
-      images: imagePaths,
+      images: blobUrls,
       location,
     });
 

@@ -1,4 +1,3 @@
-// pages/admin/upload.tsx
 import { useState } from 'react';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import { GetServerSideProps } from 'next';
@@ -6,17 +5,17 @@ import { getSession } from 'next-auth/react';
 import Image from 'next/image';
 
 interface UploadState {
-    name: string;
-    species: string;
-    location: string;
-    images: File[];
-    previews: string[];
-    loading: boolean;
-    error: string;
-    success: string;
-  }
+  name: string;
+  species: string;
+  location: string;
+  images: File[];
+  previews: string[];
+  loading: boolean;
+  error: string;
+  success: string;
+}
 
-  const UploadPage = () => {
+const UploadPage = () => {
   const [state, setState] = useState<UploadState>({
     name: '',
     species: '',
@@ -27,6 +26,14 @@ interface UploadState {
     error: '',
     success: '',
   });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setState(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -46,13 +53,13 @@ interface UploadState {
     setState(prev => ({ ...prev, loading: true, error: '', success: '' }));
 
     try {
-        const formData = new FormData();
-            formData.append('name', state.name);
-            formData.append('species', state.species);
-            formData.append('location', state.location);
-            state.images.forEach(image => {
-            formData.append('images', image);
-            });
+      const formData = new FormData();
+      formData.append('name', state.name);
+      formData.append('species', state.species);
+      formData.append('location', state.location);
+      state.images.forEach(image => {
+        formData.append('images', image);
+      });
 
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -67,11 +74,16 @@ interface UploadState {
 
       setState(prev => ({
         ...prev,
-        success: 'Images uploaded successfully!',
+        name: '',
+        species: '',
         location: '',
         images: [],
         previews: [],
+        success: 'Images uploaded successfully!',
       }));
+
+      // Cleanup preview URLs
+      state.previews.forEach(preview => URL.revokeObjectURL(preview));
     } catch (error) {
       setState(prev => ({
         ...prev,
@@ -84,9 +96,8 @@ interface UploadState {
 
   return (
     <AdminLayout>
-    <div className="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Upload Wildlife Images</h1>
+      <div className="max-w-4xl mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6">Upload New Animal Images</h1>
         
         {state.error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -100,68 +111,76 @@ interface UploadState {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow">
-        <div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
             <label className="block text-sm font-medium text-gray-700">
-            Animal Name
-            </label>
-            <input
-            type="text"
-            value={state.name}
-            onChange={(e) => setState(prev => ({ ...prev, name: e.target.value }))}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            required
-            />
-        </div>
-        <div>
-            <label className="block text-sm font-medium text-gray-700">
-                Scientific Species Name
-            </label>
-            <input
+              Animal Name
+              <input
                 type="text"
-                value={state.species}
-                onChange={(e) => setState(prev => ({ ...prev, species: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                name="name"
+                value={state.name}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 required
-                placeholder="e.g. Panthera leo"
-            />
-            </div>
-        <div>
-            <label className="block text-sm font-medium text-gray-700">
-            Location
+              />
             </label>
-            <input
-            type="text"
-            value={state.location}
-            onChange={(e) => setState(prev => ({ ...prev, location: e.target.value }))}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            required
-            />
-        </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Species
+              <input
+                type="text"
+                name="species"
+                value={state.species}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Location
+              <input
+                type="text"
+                name="location"
+                value={state.location}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                required
+              />
+            </label>
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Images
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="mt-1 block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-md file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-indigo-50 file:text-indigo-700
+                  hover:file:bg-indigo-100"
+                required
+              />
             </label>
-            <input
-              type="file"
-              onChange={handleImageChange}
-              multiple
-              accept="image/*"
-              className="mt-1 block w-full"
-              required
-            />
           </div>
 
           {state.previews.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
               {state.previews.map((preview, index) => (
-                <div key={index} className="relative h-40">
+                <div key={index} className="relative aspect-square">
                   <Image
                     src={preview}
                     alt={`Preview ${index + 1}`}
                     fill
-                    className="object-cover rounded"
+                    className="object-cover rounded-lg"
                   />
                 </div>
               ))}
@@ -171,17 +190,16 @@ interface UploadState {
           <button
             type="submit"
             disabled={state.loading}
-            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-              state.loading
-                ? 'bg-indigo-400 cursor-not-allowed'
+            className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
+              ${state.loading 
+                ? 'bg-indigo-400 cursor-not-allowed' 
                 : 'bg-indigo-600 hover:bg-indigo-700'
-            }`}
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
           >
             {state.loading ? 'Uploading...' : 'Upload'}
           </button>
         </form>
       </div>
-    </div>
     </AdminLayout>
   );
 };
