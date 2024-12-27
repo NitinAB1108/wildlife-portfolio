@@ -1,5 +1,5 @@
 // components/layouts/AdminLayout.tsx
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { ReactNode, useEffect } from 'react';
 

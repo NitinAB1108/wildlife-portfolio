@@ -5,6 +5,7 @@ import { Animal, AnimalCategory } from '../models/Animal';
 import MainLayout from '../components/layouts/MainLayout';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { Types } from 'mongoose';
 
 interface HomeProps {
   categories: AnimalCategory[];
@@ -15,6 +16,18 @@ interface HomeProps {
     id: string;
     category: string;
   }>;
+}
+
+interface AnimalDocument {
+  _id: Types.ObjectId;
+  name: string;
+  category: string;
+  imageDetails?: Array<{
+    path: string;
+    species: string;
+    description: string;
+  }>;
+  __v?: number;
 }
 
 const getCategoryImage = (category: string) => {
@@ -34,20 +47,27 @@ const getCategoryImage = (category: string) => {
   return images[category as keyof typeof images] || '/category-images/default.jpg';
 };
 
-const Home = ({ categories = [], counts = {}, allImages = [] }: HomeProps) => {
+const defaultCounts: Record<AnimalCategory, number> = {
+  Arthropods: 0,
+  Mollusks: 0,
+  Worms: 0,
+  Cnidarians: 0,
+  Echinoderms: 0,
+  Sponges: 0,
+  Fish: 0,
+  Birds: 0,
+  Reptiles: 0,
+  Amphibians: 0,
+  Mammals: 0,
+};
+
+const Home = ({ categories = [], counts = defaultCounts, allImages = [] }: HomeProps) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [currentImage, setCurrentImage] = useState<(typeof allImages)[0] | null>(
-    allImages[0] || null
-  );
 
   useEffect(() => {
     if (allImages?.length > 0) {
       const interval = setInterval(() => {
-        setCurrentSlideIndex((prev) => {
-          const newIndex = (prev + 1) % allImages.length;
-          setCurrentImage(allImages[newIndex]);
-          return newIndex;
-        });
+        setCurrentSlideIndex((prev) => (prev + 1) % allImages.length);
       }, 5000);
       return () => clearInterval(interval);
     }
@@ -158,18 +178,18 @@ export const getServerSideProps: GetServerSideProps = async () => {
       'Mammals',
     ];
 
-    const animals = await Animal.find({}).lean();
+    const animals = (await Animal.find({}).lean()) as unknown as AnimalDocument[];
 
     const counts = categories.reduce(
       (acc, category) => ({
         ...acc,
-        [category]: animals.filter((animal) => animal.category === category).length,
+        [category]: animals.filter((animal: AnimalDocument) => animal.category === category).length,
       }),
       {} as Record<AnimalCategory, number>
     );
 
-    const allImages = animals.flatMap((animal) =>
-      (animal.imageDetails || []).map((detail) => ({
+    const allImages = animals.flatMap((animal: AnimalDocument) =>
+      (animal.imageDetails || []).map((detail: { path: string }) => ({
         path: detail.path,
         name: animal.name,
         id: animal._id.toString(),

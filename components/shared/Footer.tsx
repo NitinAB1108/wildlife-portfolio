@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 const Footer = () => {
     return (
       <footer className="bg-white shadow-md mt-auto">
@@ -12,8 +14,8 @@ const Footer = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                <li><a href="/about" className="text-gray-600 hover:text-green-600">About</a></li>
-                <li><a href="/order-prints" className="text-gray-600 hover:text-green-600">Order Prints</a></li>
+                <li><Link href="/about" className="text-gray-600 hover:text-green-600">About</Link></li>
+                <li><Link href="/order-prints" className="text-gray-600 hover:text-green-600">Order Prints</Link></li>
               </ul>
             </div>
             <div>

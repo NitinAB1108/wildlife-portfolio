@@ -8,7 +8,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -32,7 +32,7 @@ export default function LoginPage() {
       } else if (result?.ok) {
         router.push('/admin/dashboard');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred during sign in');
     }
   };

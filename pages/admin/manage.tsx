@@ -1,5 +1,5 @@
 // pages/admin/manage.tsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import { Animal, IAnimal } from '../../models/Animal';
@@ -11,9 +11,12 @@ interface ManagePageProps {
   initialAnimals: IAnimal[];
 }
 
+interface IAnimalWithId extends IAnimal {
+  _id: string;
+}
+
 const ManagePage = ({ initialAnimals }: ManagePageProps) => {
-    const [error, setError] = useState<string | null>(null);
-    const [animals, setAnimals] = useState(initialAnimals);
+    const [animals, setAnimals] = useState<IAnimalWithId[]>(initialAnimals as IAnimalWithId[]);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState({
       name: '',
@@ -23,17 +26,7 @@ const ManagePage = ({ initialAnimals }: ManagePageProps) => {
       location: '',
     });
   
-    if (error) {
-      return (
-        <AdminLayout>
-          <div className="p-4 text-red-500">
-            Error: {error}
-          </div>
-        </AdminLayout>
-      );
-    }
-  
-  const handleEdit = (animal: IAnimal) => {
+  const handleEdit = (animal: IAnimalWithId) => {
     setEditingId(animal._id);
     setEditForm({
       name: animal.name,
@@ -65,11 +58,14 @@ const ManagePage = ({ initialAnimals }: ManagePageProps) => {
       console.error('Error updating animal:', error);
       alert('Failed to update animal');
     }
-    console.log('Animal data:', {
-        imageDetails: animal.imageDetails,
-        images: animal.images,
-        paths: animal.imageDetails?.map(img => img.path)
+    const currentAnimal = animals.find(a => a._id === id);
+    if (currentAnimal) {
+      console.log('Animal data:', {
+        imageDetails: currentAnimal.imageDetails,
+        images: currentAnimal.images,
+        paths: currentAnimal.imageDetails?.map((img: { path: string }) => img.path)
       });
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -231,11 +227,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     await dbConnect();
     const animals = await Animal.find({}).lean();
   
-    // Ensure each animal has imageDetails
+    // Ensure each animal has imageDetails and convert _id to string
     const processedAnimals = animals.map(animal => ({
       ...animal,
       imageDetails: animal.imageDetails || [],
-      _id: animal._id.toString()
+      _id: (animal._id as unknown as { toString(): string }).toString()
     }));
   
     return {

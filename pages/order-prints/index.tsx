@@ -32,7 +32,7 @@ const OrderPrintsPage = () => {
                 <h2 className="text-2xl font-semibold text-gray-900">How to Order</h2>
                 <p className="text-gray-700">
                   Contact us with the image reference and your preferred print option. 
-                  We'll provide a quote and work with you to create the perfect print 
+                  We&apos;ll provide a quote and work with you to create the perfect print 
                   for your space.
                 </p>
                 

@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           { new: true }
         );
         res.status(200).json(updatedAnimal);
-      } catch (error) {
+      } catch {
         res.status(400).json({ message: 'Error updating animal' });
       }
       break;
@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         await Animal.findByIdAndDelete(id);
         res.status(200).json({ message: 'Animal deleted successfully' });
-      } catch (error) {
+      } catch {
         res.status(400).json({ message: 'Error deleting animal' });
       }
       break;

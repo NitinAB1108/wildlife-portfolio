@@ -29,23 +29,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       multiples: true,
     });
 
-    const [fields, files] = await new Promise((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
-        resolve([fields, files]);
+    const [fields, files] = await new Promise<[formidable.Fields, formidable.Files]>((resolve, reject) => {
+        form.parse(req, (err, fields, files) => {
+          if (err) reject(err);
+          resolve([fields, files]);
+        });
       });
-    });
 
     const name = Array.isArray(fields.name) ? fields.name[0] : fields.name;
     const species = Array.isArray(fields.species) ? fields.species[0] : fields.species;
     const location = Array.isArray(fields.location) ? fields.location[0] : fields.location;
     const fileArray = Array.isArray(files.images) ? files.images : [files.images];
+    
+    // Add null check and type guard
+    if (!fileArray || !fileArray[0]) {
+      throw new Error('No files were uploaded');
+    }
 
-    // Correctly construct imagePaths using newFilename
-    const imagePaths = fileArray.map((file) => `/uploads/${file.newFilename}`);
+    // Type guard to ensure file has newFilename
+    const imagePaths = fileArray.map((file) => {
+      if (!file || !file.newFilename) {
+        throw new Error('Invalid file upload');
+      }
+      return `/uploads/${file.newFilename}`;
+    });
 
     // Get details for first image to determine category
-    const firstImageDetails = await getAnimalDetails(imagePaths[0], name, species);
+
+    // Add null checks for required fields
+    if (!name) {
+      throw new Error('Name is required');
+    }
+
+    const speciesValue = species || 'Unknown Species'; // Provide default value if species is undefined
+
+    // Use the checked values in getAnimalDetails
+    const firstImageDetails = await getAnimalDetails(imagePaths[0], name, speciesValue);
 
     if (!firstImageDetails || !firstImageDetails.category) {
       throw new Error('Failed to get animal category from OpenAI');
@@ -53,18 +72,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Get details for all images
     const imageDetails = await Promise.all(
-      imagePaths.map(async (path) => {
-        const details = await getAnimalDetails(path, name, species);
-        if (!details) {
-          throw new Error('Failed to get image details from OpenAI');
-        }
-        return {
-          path,
-          species: details.species || species || 'Unknown Species',
-          description: details.description || 'No description available.',
-        };
-      })
-    );
+        imagePaths.map(async (path) => {
+          const details = await getAnimalDetails(path, name, speciesValue);
+          if (!details) {
+            throw new Error('Failed to get image details from OpenAI');
+          }
+          return {
+            path,
+            species: details.species || speciesValue,
+            description: details.description || 'No description available.',
+          };
+        })
+      );
 
     const existingAnimal = await Animal.findOne({ name });
 

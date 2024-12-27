@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await admin.save();
 
     res.status(201).json({ message: 'Admin created successfully' });
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: 'Error creating admin' });
   }
 }

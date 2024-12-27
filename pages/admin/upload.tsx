@@ -1,7 +1,6 @@
 // pages/admin/upload.tsx
 import { useState } from 'react';
 import AdminLayout from '../../components/layouts/AdminLayout';
-import { useSession } from 'next-auth/react';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import Image from 'next/image';

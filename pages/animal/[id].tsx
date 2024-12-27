@@ -2,7 +2,7 @@ import { GetServerSideProps } from 'next';
 import { dbConnect } from '../../lib/dbConnect';
 import { Animal, IAnimal } from '../../models/Animal';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import MainLayout from '../../components/layouts/MainLayout';
 
 interface AnimalPageProps {
@@ -130,23 +130,42 @@ const AnimalPage: React.FC<AnimalPageProps> = ({ animal }) => {
 
 export default AnimalPage;
 
+import { Types, Document } from 'mongoose'; // Add Document to the import
+
+// Update the interface to match Mongoose's document structure
+interface AnimalLeanDoc extends Document {
+  _id: Types.ObjectId;
+  name: string;
+  category: string;
+  location: string;
+  imageDetails?: Array<{
+    path: string;
+    species: string;
+    description: string;
+  }>;
+  __v: number;
+}
+
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const id = context.params?.id as string;
-  await dbConnect();
+    const id = context.params?.id as string;
+    await dbConnect();
+    
+    // Use type assertion with unknown first
+    const animal = (await Animal.findById(id).lean()) as unknown as AnimalLeanDoc;
+
+    if (!animal) {
+      return { notFound: true };
+    }
+    
+    const processedAnimal = {
+      ...animal,
+      imageDetails: animal.imageDetails || [],
+      _id: animal._id.toString()
+    };
   
-  const animal = await Animal.findById(id).lean();
-
-  if (!animal) {
-    return { notFound: true };
-  }
-
-  if (!animal.imageDetails || !animal.imageDetails.length) {
-    animal.imageDetails = [];
-  }
-
-  return { 
-    props: { 
-      animal: JSON.parse(JSON.stringify(animal))
-    } 
-  };
+    return { 
+      props: { 
+        animal: JSON.parse(JSON.stringify(processedAnimal))
+      } 
+    };
 };

@@ -3,6 +3,16 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcryptjs';
 import { dbConnect } from '../../../lib/dbConnect';
 import { Admin } from '../../../models/Admin';
+import { DefaultSession } from "next-auth"
+
+// Add this type declaration to extend the session user type
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+    } & DefaultSession["user"]
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -56,7 +66,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
+        session.user.id = token.id as string;
       }
       return session;
     },
