@@ -16,7 +16,7 @@ const Navbar = () => {
               {!isHomePage && (
                 <button
                   onClick={() => router.back()}
-                  className="text-gray-600/90 hover:text-green-600 transition-colors"
+                  className="text-white/90 hover:text-green-600 transition-colors"
                   aria-label="Go back"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -25,14 +25,14 @@ const Navbar = () => {
                 </button>
               )}
               <Link href="/" className="text-xl font-bold text-green-600/90 hover:text-green-600 transition-colors">
-                Wildlife Portfolio
+                NABGRAPHY
               </Link>
             </div>
             
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-md text-gray-600/90 hover:text-green-600 transition-colors"
+              className="md:hidden p-2 rounded-md text-white/90 hover:text-green-600 transition-colors"
               aria-label="Toggle menu"
             >
               <svg
@@ -53,13 +53,13 @@ const Navbar = () => {
             <div className="hidden md:flex items-center space-x-8">
               <Link 
                 href="/" 
-                className="text-gray-600/90 hover:text-green-600 transition-colors font-medium"
+                className="text-white/90 hover:text-green-600 transition-colors font-medium"
               >
                 Home
               </Link>
               <Link 
                 href="/about" 
-                className="text-gray-600/90 hover:text-green-600 transition-colors font-medium"
+                className="text-white/90 hover:text-green-600 transition-colors font-medium"
               >
                 About
               </Link>
@@ -70,14 +70,14 @@ const Navbar = () => {
           <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden mt-4 space-y-4`}>
             <Link 
               href="/" 
-              className="block text-gray-600/90 hover:text-green-600 transition-colors font-medium py-2"
+              className="block text-white/90 hover:text-green-600 transition-colors font-medium py-2"
               onClick={() => setIsMenuOpen(false)}
             >
               Home
             </Link>
             <Link 
               href="/about" 
-              className="block text-gray-600/90 hover:text-green-600 transition-colors font-medium py-2"
+              className="block text-white/90 hover:text-green-600 transition-colors font-medium py-2"
               onClick={() => setIsMenuOpen(false)}
             >
               About

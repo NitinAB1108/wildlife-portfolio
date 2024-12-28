@@ -54,7 +54,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, animals }) => {
   
     return (
       <MainLayout>
-        <div className={`min-h-screen transform-gpu transition-all duration-1000 ${
+        <div className={`min-h-screen -mt-[96px] transform-gpu transition-all duration-1000 ${
           isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}>
       {/* Hero Section with Slideshow */}
