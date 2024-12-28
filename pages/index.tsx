@@ -127,34 +127,40 @@ const Home = ({ categories = [], counts = defaultCounts, allImages = [] }: HomeP
           <h2 className="text-4xl font-bold text-gray-900 mb-12 text-center">
             Explore Categories
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {categories.filter(category => counts[category] > 0).map((category) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          {categories.filter(category => counts[category] > 0).map((category) => (
+            <div
+              key={category}
+              className="transform-gpu transition-all duration-500 hover:scale-[1.02]"
+            >
               <Link
                 href={`/category/${encodeURIComponent(category)}`}
-                key={category}
-                className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+                className="group block relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl"
               >
-                <div className="relative h-64">
+                <div 
+                  className="relative h-48 sm:h-56 lg:h-64 transform-gpu transition-transform duration-700 ease-out group-hover:scale-105"
+                >
                   <Image
                     src={getCategoryImage(category)}
                     alt={category}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <h2 className="text-2xl font-semibold mb-2 group-hover:translate-x-2 transition-transform duration-300">
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 transform-gpu transition-all duration-500 group-hover:translate-y-[-4px]">
+                  <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-white group-hover:translate-x-2 transition-transform duration-300">
                     {category}
                   </h2>
-                  <p className="text-gray-200 flex items-center space-x-2">
+                  <p className="text-sm sm:text-base text-gray-200 flex items-center space-x-2">
                     <span className="w-2 h-2 bg-green-400 rounded-full" />
                     <span>{counts[category]} species documented</span>
                   </p>
                 </div>
               </Link>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
         </div>
       </div>
     </MainLayout>

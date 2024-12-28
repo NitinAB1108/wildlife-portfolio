@@ -29,27 +29,34 @@ const getCategoryDescription = (category: string) => {
 };
 
 const CategoryPage: React.FC<CategoryPageProps> = ({ category, animals }) => {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const allImages = animals.flatMap(animal => 
-    animal.imageDetails?.map(detail => ({
-      path: detail.path,
-      name: animal.name,
-      id: animal._id
-    })) || []
-  );
-
-  useEffect(() => {
-    if (allImages.length > 0) {
-      const interval = setInterval(() => {
-        setCurrentSlideIndex((prev) => (prev + 1) % allImages.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [allImages.length]);
-
-  return (
-    <MainLayout>
-    <div className="min-h-screen">
+    const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const allImages = animals.flatMap(animal => 
+      animal.imageDetails?.map(detail => ({
+        path: detail.path,
+        name: animal.name,
+        id: animal._id
+      })) || []
+    );
+  
+    useEffect(() => {
+      setIsLoaded(true);
+    }, []);
+  
+    useEffect(() => {
+      if (allImages.length > 0) {
+        const interval = setInterval(() => {
+          setCurrentSlideIndex((prev) => (prev + 1) % allImages.length);
+        }, 5000);
+        return () => clearInterval(interval);
+      }
+    }, [allImages.length]);
+  
+    return (
+      <MainLayout>
+        <div className={`min-h-screen transform-gpu transition-all duration-1000 ${
+          isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
       {/* Hero Section with Slideshow */}
       <div className="relative h-[50vh] overflow-hidden">
         {allImages.length > 0 && (
@@ -92,38 +99,29 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, animals }) => {
             <p className="text-xl text-gray-600">No animals documented in this category yet.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {animals.map((animal) => (
-              <Link 
-                href={`/animal/${animal._id?.toString()}`} 
+              <Link
                 key={animal._id?.toString()}
-                className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
+                href={`/animal/${animal._id}`}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
-                <div className="relative h-56">
-                  {animal.imageDetails?.length > 0 ? (
+                <div className="relative h-48 sm:h-56">
+                  {animal.imageDetails && animal.imageDetails[0] && (
                     <Image
                       src={animal.imageDetails[0].path}
                       alt={animal.name}
                       fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <Image
-                      src="/placeholder-image.jpg"
-                      alt="Placeholder"
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                     />
                   )}
-                  <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-sm">
-                    {animal.imageDetails?.length || 0} images
-                  </div>
                 </div>
-                <div className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 group-hover:text-green-600 transition-colors">
+                <div className="p-4">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                     {animal.name}
                   </h2>
-                  <p className="text-gray-600 mt-2">{animal.species}</p>
+                  <p className="text-sm sm:text-base text-gray-600 mt-1">{animal.species}</p>
                 </div>
               </Link>
             ))}
