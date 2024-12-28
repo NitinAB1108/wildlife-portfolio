@@ -1,6 +1,7 @@
 // pages/admin/dashboard.tsx
 import { GetServerSideProps } from 'next';
-import { getSession } from 'next-auth/react';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../api/auth/[...nextauth]';
 import Link from 'next/link';
 import AdminLayout from '../../components/layouts/AdminLayout';
 
@@ -37,7 +38,7 @@ const AdminDashboard = () => {
   };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
+    const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session) {
     return {

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import { GetServerSideProps } from 'next';
-import { getSession } from 'next-auth/react';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../api/auth/[...nextauth]';
 import Image from 'next/image';
 
 interface UploadState {
@@ -205,7 +206,7 @@ const UploadPage = () => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
+    const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session) {
     return {
