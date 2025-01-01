@@ -122,3 +122,21 @@ body {
     }
   }
 }
+@layer utilities {
+  .will-change-transform {
+    will-change: transform;
+  }
+  
+  .backface-visible {
+    backface-visibility: hidden;
+  }
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}

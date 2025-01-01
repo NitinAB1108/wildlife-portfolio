@@ -104,7 +104,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, animals }) => {
               <Link
                 key={animal._id?.toString()}
                 href={`/animal/${animal._id}`}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                className="bg-gray-900 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
                 <div className="relative h-48 sm:h-56">
                   {animal.imageDetails && animal.imageDetails[0] && (
@@ -118,7 +118,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, animals }) => {
                   )}
                 </div>
                 <div className="p-4">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                  <h2 className="text-lg sm:text-xl font-semibold text-white">
                     {animal.name}
                   </h2>
                   <p className="text-sm sm:text-base text-gray-600 mt-1">{animal.species}</p>

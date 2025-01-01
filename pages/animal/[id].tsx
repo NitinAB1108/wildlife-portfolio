@@ -14,8 +14,8 @@ const AnimalPage: React.FC<AnimalPageProps> = ({ animal }) => {
 
   if (!animal.imageDetails || animal.imageDetails.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-100 to-blue-50 flex items-center justify-center">
-        <p className="text-xl text-gray-700">No images available for this animal.</p>
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center">
+        <p className="text-xl text-gray-300">No images available for this animal.</p>
       </div>
     );
   }
@@ -24,7 +24,7 @@ const AnimalPage: React.FC<AnimalPageProps> = ({ animal }) => {
   
   return (
     <MainLayout>
-    <div className="min-h-screen bg-gradient-to-b from-green-100 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Main Carousel Section */}
@@ -59,7 +59,7 @@ const AnimalPage: React.FC<AnimalPageProps> = ({ animal }) => {
             {/* Navigation Controls */}
             <button
             onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev))}
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors"
             aria-label="Previous image"
             >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,7 +69,7 @@ const AnimalPage: React.FC<AnimalPageProps> = ({ animal }) => {
 
             <button
             onClick={() => setCurrentIndex((prev) => (prev < animal.imageDetails.length - 1 ? prev + 1 : prev))}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors"
             aria-label="Next image"
             >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,29 +82,29 @@ const AnimalPage: React.FC<AnimalPageProps> = ({ animal }) => {
           
           {/* Details Section */}
           <div className="max-w-3xl mx-auto p-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
+            <h1 className="text-4xl font-bold text-white mb-8 text-center">
               {animal.name}
             </h1>
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <h2 className="text-sm font-medium text-gray-500">Category</h2>
-                <p className="text-lg text-gray-900">{animal.category}</p>
+                <h2 className="text-sm font-medium text-gray-400">Category</h2>
+                <p className="text-lg text-gray-200">{animal.category}</p>
               </div>
 
               <div className="space-y-2">
-                <h2 className="text-sm font-medium text-gray-500">Species</h2>
-                <p className="text-lg text-gray-900">{currentImage.species}</p>
+                <h2 className="text-sm font-medium text-gray-400">Species</h2>
+                <p className="text-lg text-gray-200">{currentImage.species}</p>
               </div>
 
               <div className="space-y-2">
-                <h2 className="text-sm font-medium text-gray-500">Location</h2>
-                <p className="text-lg text-gray-900">{animal.location}</p>
+                <h2 className="text-sm font-medium text-gray-400">Location</h2>
+                <p className="text-lg text-gray-200">{animal.location}</p>
               </div>
 
               <div className="md:col-span-2 space-y-2">
-                <h2 className="text-sm font-medium text-gray-500">Description</h2>
-                <p className="text-lg text-gray-900">{currentImage.description}</p>
+                <h2 className="text-sm font-medium text-gray-400">Description</h2>
+                <p className="text-lg text-gray-200">{currentImage.description}</p>
               </div>
             </div>
           </div>

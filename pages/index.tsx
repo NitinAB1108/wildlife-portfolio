@@ -6,6 +6,7 @@ import MainLayout from '../components/layouts/MainLayout';
 import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
 import { Types } from 'mongoose';
+import dynamic from 'next/dynamic';
 
 interface HomeProps {
   categories: AnimalCategory[];
@@ -61,7 +62,11 @@ const defaultCounts: Record<AnimalCategory, number> = {
   Mammals: 0,
 };
 
-const Home = ({ categories = [], counts = defaultCounts, allImages = [] }: HomeProps) => {
+const BackgroundSlideshow = dynamic(() => import('../components/BackgroundSlideshow'), {
+  ssr: false
+});
+
+const Home = ({ categories = [], counts = defaultCounts}: HomeProps) => {
   const [isMobile, setIsMobile] = useState(false);
   
   // Debounced resize handler
@@ -84,26 +89,6 @@ const Home = ({ categories = [], counts = defaultCounts, allImages = [] }: HomeP
   }, []);
 
   // Memoize image processing
-  const columnImages = useMemo(() => {
-    const imagesPerColumn = isMobile ? 4 : 6;
-    const speeds = [0.5, 0.75, 0.4, 0.6];
-
-    return speeds.map((_, colIndex) => {
-      const columnImages = allImages
-        .filter((_, index) => index % 4 === colIndex)
-        .slice(0, imagesPerColumn);
-      
-      // Shuffle images while avoiding duplicates
-      const shuffled = [...columnImages];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        if (shuffled[i].id !== shuffled[j].id) {
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-      }
-      return shuffled;
-    });
-  }, [allImages, isMobile]);
 
   // Memoize filtered categories
   const filteredCategories = useMemo(() => 
@@ -115,66 +100,13 @@ const Home = ({ categories = [], counts = defaultCounts, allImages = [] }: HomeP
     <MainLayout>
       <div className="min-h-screen -mt-[96px]">
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0">
-            <div className="grid grid-cols-4 h-full">
-              {columnImages.map((images, colIndex) => (
-                <div key={colIndex} className="relative overflow-hidden">
-                  <div 
-                    className="animate-scroll will-change-transform"
-                    style={{
-                      animation: `scroll${colIndex % 2 === 0 ? 'Down' : 'Up'} ${isMobile ? 20/(colIndex * 0.25 + 0.5) : 30/(colIndex * 0.25 + 0.5)}s linear infinite`,
-                    }}
-                  >
-                    {images.map((image, index) => (
-                      <div
-                        key={`${image.id}-${index}`}
-                        className="relative h-[20vh] md:h-[35vh] w-full"
-                      >
-                        <Image
-                          src={image.path}
-                          alt={image.name}
-                          fill
-                          className="object-cover"
-                          sizes="25vw"
-                          quality={40}
-                          loading={index < 2 ? "eager" : "lazy"}
-                          placeholder="blur"
-                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LC0yMi4xODY6OTg2MDQ0PkE9P0RHSktLS0xMTU1NTU1NTU3/2wBDAR4eHh0aHTQaGjRNMCUtTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-                        />
-                        <div className="absolute inset-0 bg-black/20" />
-                      </div>
-                    ))}
-                    {/* Duplicate images for seamless scrolling */}
-                    {images.map((image, index) => (
-                      <div
-                        key={`${image.id}-${index}-duplicate`}
-                        className="relative h-[20vh] md:h-[35vh] w-full"
-                      >
-                        <Image
-                          src={image.path}
-                          alt={image.name}
-                          fill
-                          className="object-cover"
-                          sizes="25vw"
-                          quality={40}
-                          loading="lazy"
-                          placeholder="blur"
-                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LC0yMi4xODY6OTg2MDQ0PkE9P0RHSktLS0xMTU1NTU1NTU3/2wBDAR4eHh0aHTQaGjRNMCUtTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-                        />
-                        <div className="absolute inset-0 bg-black/20" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="absolute inset-0 backdrop-blur-sm bg-black/50" />
-          </div>
+        <BackgroundSlideshow isMobile={isMobile} />
+          <div className="absolute inset-0 backdrop-blur-sm bg-black/50" />  
 
           {/* Hero Section */}
           <div className="relative h-screen">
             <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-2 md:px-4">
-              <h1 className="text-6xl sm:text-7xl md:text-9xl font-bold mb-3 md:mb-6 text-center">
+              <h1 className="text-6xl sm:text-7xl md:text-9xl font-bold mb-3 md:mb-6 text-center mx-4 sm:mx-0">
                 NABGRAPHY
               </h1>
               <p className="text-sm md:text-2xl max-w-3xl text-center">
